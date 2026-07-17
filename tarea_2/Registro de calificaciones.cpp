@@ -3,113 +3,142 @@
 #include <vector>
 #include <memory>
 
+using namespace std;
+
 class Estudiante {
-private:
-    std::string nombre;
-    std::string matricula;
-    std::string sesion;
-
 public:
-    Estudiante() : nombre(""), matricula(""), sesion("") {}
+    string nombre, matricula, sesion;
+
+    Estudiante(string n, string m, string s) : nombre(n), matricula(m), sesion(s) {}
     
-    Estudiante(const std::string& nombre, const std::string& matricula, const std::string& sesion)
-        : nombre(nombre), matricula(matricula), sesion(sesion) {}
-
-    Estudiante(const Estudiante& otro)
-        : nombre(otro.nombre), matricula(otro.matricula), sesion(otro.sesion) {}
-
-    std::string getNombre() const { return this->nombre; }
-    std::string getMatricula() const { return this->matricula; }
-    std::string getSesion() const { return this->sesion; }
-
-    friend std::ostream& operator<<(std::ostream& os, const Estudiante& e) {
-        os << e.nombre << " (" << e.matricula << ")";
-        return os;
-    }
-
-    friend std::istream& operator>>(std::istream& is, Estudiante& e) {
-        std::cout << "Nombre estudiante: ";
-        std::getline(is, e.nombre);
-        std::cout << "Matricula: ";
-        std::getline(is, e.matricula);
-        std::cout << "Sesion: ";
-        std::getline(is, e.sesion);
-        return is;
-    }
+    Estudiante(const Estudiante& e) : nombre(e.nombre), matricula(e.matricula), sesion(e.sesion) {}
 };
 
 class Profesor {
-private:
-    std::string nombre;
-    std::string codigo;
-
 public:
-    Profesor() : nombre(""), codigo("") {}
+    string nombre, codigo;
+
+    Profesor(string n, string c) : nombre(n), codigo(c) {}
     
-    Profesor(const std::string& nombre, const std::string& codigo)
-        : nombre(nombre), codigo(codigo) {}
-
-    Profesor(const Profesor& otro)
-        : nombre(otro.nombre), codigo(otro.codigo) {}
-
-    std::string getNombre() const { return this->nombre; }
-    std::string getCodigo() const { return this->codigo; }
-
-    friend std::ostream& operator<<(std::ostream& os, const Profesor& p) {
-        os << p.nombre << " (Cod: " << p.codigo << ")";
-        return os;
-    }
-
-    friend std::istream& operator>>(std::istream& is, Profesor& p) {
-        std::cout << "Nombre profesor: ";
-        std::getline(is, p.nombre);
-        std::cout << "Codigo profesor: ";
-        std::getline(is, p.codigo);
-        return is;
-    }
+    Profesor(const Profesor& p) : nombre(p.nombre), codigo(p.codigo) {}
 };
 
 class Materia {
-private:
-    std::string nombre;
-    std::string codigo;
+public:
+    string nombre, codigo;
     int creditos;
 
-public:
-    Materia() : nombre(""), codigo(""), creditos(0) {}
+    Materia(string n, string c, int cr) : nombre(n), codigo(c), creditos(cr) {}
     
-    Materia(const std::string& nombre, const std::string& codigo, int creditos)
-        : nombre(nombre), codigo(codigo), creditos(creditos) {}
-
-    Materia(const Materia& otro)
-        : nombre(otro.nombre), codigo(otro.codigo), creditos(otro.creditos) {}
-
-    std::string getNombre() const { return this->nombre; }
-    std::string getCodigo() const { return this->codigo; }
-    int getCreditos() const { return this->creditos; }
+    Materia(const Materia& m) : nombre(m.nombre), codigo(m.codigo), creditos(m.creditos) {}
 };
 
 class Calificacion {
-private:
-    std::shared_ptr<Estudiante> estudiante;
-    std::shared_ptr<Profesor> profesor;
-    std::shared_ptr<Materia> materia;
+public:
+    shared_ptr<Estudiante> est;
+    shared_ptr<Profesor> prof;
+    shared_ptr<Materia> mat;
     double nota;
 
-public:
-    Calificacion(std::shared_ptr<Estudiante> estudiante, std::shared_ptr<Profesor> profesor, std::shared_ptr<Materia> materia, double nota)
-        : estudiante(estudiante), profesor(profesor), materia(materia), nota(nota) {}
-
-    Calificacion(const Calificacion& otra)
-        : estudiante(otra.estudiante), profesor(otra.profesor), materia(otra.materia), nota(otra.nota) {}
-
-    std::shared_ptr<Estudiante> getEstudiante() const { return this->estudiante; }
-    std::shared_ptr<Profesor> getProfesor() const { return this->profesor; }
-    std::shared_ptr<Materia> getMateria() const { return this->materia; }
-    double getNota() const { return this->nota; }
+    Calificacion(shared_ptr<Estudiante> e, shared_ptr<Profesor> p, shared_ptr<Materia> m, double n)
+        : est(e), prof(p), mat(m), nota(n) {}
 };
 
+class SistemaRegistro {
+public:
+    vector<shared_ptr<Estudiante>> estudiantes;
+    vector<shared_ptr<Profesor>> profesores;
+    vector<shared_ptr<Materia>> materias;
+    vector<Calificacion> calificaciones;
+
+    void registrarCalificacion(int eIdx, int pIdx, int mIdx, double nota) {
+        calificaciones.push_back(Calificacion(estudiantes[eIdx], profesores[pIdx], materias[mIdx], nota));
+    }
+
+    void mostrarReporte() {
+        cout << "\n--- REPORTE GENERAL DE NOTAS ---\n";
+        if (calificaciones.empty()) {
+            cout << "No hay calificaciones registradas.\n";
+            return;
+        }
+        for (const auto& c : calificaciones) {
+            cout << "Estudiante: " << c.est->nombre << " (" << c.est->matricula << ")\n"
+                 << "Materia:    " << c.mat->nombre << "\n"
+                 << "Profesor:   " << c.prof->nombre << "\n"
+                 << "Nota:       " << c.nota << "\n--------------------------------\n";
+        }
+    }
+};
+
+
 int main() {
-    std::cout << "Paso 2: Agregadas Materias y Calificaciones.\n";
+    SistemaRegistro sistema;
+    
+    sistema.estudiantes.push_back(make_shared<Estudiante>("Martha Alvarez", "2026-0001", "POO411"));
+    sistema.profesores.push_back(make_shared<Profesor>("Dr. Kirino", "PROF099"));
+    sistema.materias.push_back(make_shared<Materia>("Programacion Orientada a Objetos", "POO411", 4));
+
+    int opcion;
+    do {
+        cout << "\n=== MENU REGISTRO ===\n"
+             << "1. Registrar Estudiante\n"
+             << "2. Registrar Profesor\n"
+             << "3. Registrar Materia\n"
+             << "4. Registrar Calificacion\n"
+             << "5. Mostrar Reporte\n"
+             << "6. Salir\n"
+             << "Seleccione una opcion: ";
+        cin >> opcion;
+        cin.ignore(); 
+
+        if (opcion == 1) {
+            string n, m, s;
+            cout << "Nombre: "; getline(cin, n);
+            cout << "Matricula: "; getline(cin, m);
+            cout << "Sesion: "; getline(cin, s);
+            sistema.estudiantes.push_back(make_shared<Estudiante>(n, m, s));
+        } 
+        else if (opcion == 2) {
+            string n, c;
+            cout << "Nombre: "; getline(cin, n);
+            cout << "Codigo: "; getline(cin, c);
+            sistema.profesores.push_back(make_shared<Profesor>(n, c));
+        }
+        else if (opcion == 3) {
+            string n, c; int cr;
+            cout << "Nombre Materia: "; getline(cin, n);
+            cout << "Codigo Materia: "; getline(cin, c);
+            cout << "Creditos: "; cin >> cr;
+            sistema.materias.push_back(make_shared<Materia>(n, c, cr));
+        }
+        else if (opcion == 4) {
+            if (sistema.estudiantes.empty() || sistema.profesores.empty() || sistema.materias.empty()) {
+                cout << "Error: Debe registrar primero estudiante, profesor y materia.\n";
+                continue;
+            }
+            
+            for (size_t i = 0; i < sistema.estudiantes.size(); i++) 
+                cout << i + 1 << ". " << sistema.estudiantes[i]->nombre << "\n";
+            int e; cout << "Seleccione Estudiante (numero): "; cin >> e;
+
+            for (size_t i = 0; i < sistema.profesores.size(); i++) 
+                cout << i + 1 << ". " << sistema.profesores[i]->nombre << "\n";
+            int p; cout << "Seleccione Profesor (numero): "; cin >> p;
+
+            for (size_t i = 0; i < sistema.materias.size(); i++) 
+                cout << i + 1 << ". " << sistema.materias[i]->nombre << "\n";
+            int m; cout << "Seleccione Materia (numero): "; cin >> m;
+
+            double nota; 
+            cout << "Calificacion: "; cin >> nota;
+            
+            sistema.registrarCalificacion(e - 1, p - 1, m - 1, nota);
+        }
+        else if (opcion == 5) {
+            sistema.mostrarReporte();
+        }
+    } while (opcion != 6);
+
+    cout << "Saliendo del sistema...\n";
     return 0;
 }
